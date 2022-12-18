@@ -7,7 +7,6 @@ import org.springframework.web.servlet.view.RedirectView;
 import tt.authorization.model.User;
 import tt.authorization.service.DashboardService;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
