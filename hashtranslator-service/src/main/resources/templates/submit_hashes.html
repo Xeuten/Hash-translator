@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="http://localhost:8181/transitional" enctype="text/plain" method="POST">
+    <div style="display: flex;">
+        <div style="width: 200px;">Insert a JSON with hashes to decrypt in the text box.</div>
+        <textarea style="width: 75%; height: 333px; resize: none;" name="text"></textarea>
+    </div>
+    <input type="hidden" name="token" th:value="${base64t}" />
+    <div style="text-align: center; margin-top: 10px;">
+        <input type="submit" value="Submit">
+    </div>
+</form>
+
+</body>
+</html>

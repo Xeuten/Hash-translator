@@ -21,26 +21,25 @@ public class DashboardService {
     @Value("${urls.applications}")
     private String hashDecryptUrl;
 
-    @Value("${messages.incorrect_credentials}")
-    private String incorrectCredentials;
-
     @Value("${data.admin_mail}")
     private String adminMail;
 
     @Value("${data.admin_pass}")
     private String adminPass;
 
-        public RedirectView dashboardResponse(User user, RedirectAttributes redirectAttributes, HttpServletResponse response) {
+    @Value("${data.admin_token_name}")
+    private String adminTokenName;
+
+    public RedirectView dashboardResponse(User user, RedirectAttributes redirectAttributes, HttpServletResponse response) {
         String eMail = user.getEmail(), password = user.getPassword();
         if(eMail.equals(adminMail) && password.equals(adminPass)) {
-            response.addCookie(new Cookie("base64AdminToken", Utils.generateBase64Token(eMail, password)));
+            Cookie adminTokenCookie = new Cookie(adminTokenName, Utils.generateBase64Token(eMail, password));
+            adminTokenCookie.setMaxAge(3600);
+            response.addCookie(adminTokenCookie);
             return new RedirectView("/admin");
         }
-        if(userRepository.credentialsAreCorrect(eMail, password)) {
-            redirectAttributes.addFlashAttribute("base64t", Utils.generateBase64Token(eMail, password));
-            return new RedirectView(hashDecryptUrl);
-        }
-        redirectAttributes.addFlashAttribute("message", incorrectCredentials);
-        return new RedirectView("/login");
+        redirectAttributes.addAttribute("base64t", Utils.generateBase64Token(eMail, password));
+        return new RedirectView(hashDecryptUrl);
     }
+
 }

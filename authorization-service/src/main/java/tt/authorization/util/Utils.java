@@ -6,7 +6,7 @@ import java.util.Base64;
 
 public class Utils {
     public static String generateBase64Token(String eMail, String password) {
-        return Base64.getEncoder().encodeToString(("email=" + eMail + "&password=" + password).getBytes());
+        return Base64.getEncoder().encodeToString((eMail + ":" + password).getBytes());
     }
 
     public static boolean containsCookie(HttpServletRequest request, String cookieName) {

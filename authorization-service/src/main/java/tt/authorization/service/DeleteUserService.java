@@ -19,7 +19,7 @@ public class DeleteUserService {
     public String deleteUserResponse(String email, HttpServletRequest request, Model model) {
         if(Utils.containsCookie(request, "base64AdminToken")) {
             Optional<User> user = userRepository.findById(email);
-            if(!user.isPresent()) {
+            if(user.isEmpty()) {
                 model.addAttribute("message","Error. User " + email + " doesn't exist.");
                 return "doesn't_exist";
             }

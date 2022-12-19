@@ -1,6 +1,7 @@
 package tt.authorization.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
@@ -9,7 +10,7 @@ import tt.authorization.service.DashboardService;
 
 import javax.servlet.http.HttpServletResponse;
 
-@RestController
+@Controller
 @RequestMapping("/dashboard")
 public class DashboardController {
 
