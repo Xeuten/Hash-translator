@@ -3,7 +3,7 @@ package tt.hashtranslator.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tt.hashtranslator.model.DecryptionRequest;
+import tt.hashtranslator.model.DecryptRequest;
 import tt.hashtranslator.service.ApplicationService;
 
 @RestController
@@ -15,7 +15,7 @@ public class ApplicationController {
 
     @PostMapping
     @ResponseBody
-    public ResponseEntity<String> sendApplication(@RequestBody DecryptionRequest decryptionRequest, @RequestHeader("Authorization") String authHeader) {
-        return applicationService.sendApplicationResponse(decryptionRequest, authHeader);
+    public ResponseEntity<String> sendApplication(@RequestBody DecryptRequest decryptRequest, @RequestHeader("Authorization") String authHeader) {
+        return applicationService.sendApplicationResponse(decryptRequest, authHeader);
     }
 }

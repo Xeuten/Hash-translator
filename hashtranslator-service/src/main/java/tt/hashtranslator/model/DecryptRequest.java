@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.ArrayList;
 
 @Data
-public class DecryptionRequest {
+public class DecryptRequest {
 
     public ArrayList<String> hashes;
 
