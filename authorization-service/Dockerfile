@@ -1,13 +1,14 @@
-FROM openjdk:8-jdk-alpine AS builder
-WORKDIR /app
-COPY gradle/ gradle/
-COPY gradlew build.gradle settings.gradle ./
-RUN ./gradlew --no-daemon dependencies
-COPY src/ src/
-RUN ./gradlew --no-daemon build
+FROM gradle:7.5.1-jdk17-alpine AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle build --no-daemon -x test
 
-FROM openjdk:8-jre-alpine
-WORKDIR /app
+FROM openjdk:17-jdk-slim
+
 EXPOSE 8080
-CMD ["java", "-jar", "/app/authorization.jar"]
-COPY --from=builder /app/build/libs/authorization-*.jar authorization.jar
+
+RUN mkdir /app
+
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/
+
+ENTRYPOINT ["java","-jar","/app/authorization-0.0.1.jar"]

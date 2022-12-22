@@ -15,7 +15,8 @@ public class ApplicationController {
 
     @PostMapping
     @ResponseBody
-    public ResponseEntity<String> sendApplication(@RequestBody DecryptRequest decryptRequest, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<String> sendApplication(@RequestBody DecryptRequest decryptRequest,
+                                                  @RequestHeader("Authorization") String authHeader) {
         return applicationService.sendApplicationResponse(decryptRequest, authHeader);
     }
 }

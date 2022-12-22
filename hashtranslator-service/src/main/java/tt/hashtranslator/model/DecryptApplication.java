@@ -8,13 +8,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.HashMap;
 import java.util.UUID;
 
-
+/**
+ * This class is used to perform ORM of the decryption application. An application has a unique id (in UUID format), a
+ * hash map of hashes and their decodings and a status.
+ */
 @Data
 @NoArgsConstructor
 @Document(collection = "applications")
 public class DecryptApplication {
 
     public DecryptApplication(DecryptRequest request) {
+        this.id = UUID.randomUUID().toString();
         this.status = DecryptApplicationStatus.PROCESSING.toString();
         HashMap<String, String> map = new HashMap<>();
         request.hashes.forEach(hash -> map.put(hash, ""));
@@ -22,7 +26,7 @@ public class DecryptApplication {
     }
 
     @Id
-    private final String id = UUID.randomUUID().toString();
+    private String id;
 
     private String status;
 

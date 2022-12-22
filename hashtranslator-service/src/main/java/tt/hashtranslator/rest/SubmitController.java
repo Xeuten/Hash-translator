@@ -6,18 +6,19 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import tt.hashtranslator.service.SubmitService;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Controller
-@RequestMapping("/api/submit")
+@RequestMapping("/api")
 public class SubmitController {
 
     @Autowired
     private SubmitService submitService;
 
     @GetMapping
-    public String submitHashes(@ModelAttribute("base64t") String token, Model model) {
-        return submitService.submitResponse(token, model);
+    public String submitHashes(@ModelAttribute("base64t") String token, HttpServletResponse response, Model model) {
+        return submitService.submitResponse(token, response, model);
     }
 }

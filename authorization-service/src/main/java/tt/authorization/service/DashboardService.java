@@ -30,6 +30,19 @@ public class DashboardService {
     @Value("${data.admin_token_name}")
     private String adminTokenName;
 
+    @Value("${data.token_name}")
+    private String tokenName;
+
+    /**
+     * This method corresponds to a transitional controller. If the user has entered admin credentials into form, a
+     * cookie that is used to identify admin during further requests is created. After that the user is redirected
+     * to the admin URL. If the user has entered any other credentials, the token is created and is added to redirect
+     * attributes, and the user is redirected to the translator service.
+     * @param user The object that contains credentials that were entered.
+     * @param redirectAttributes The object that contains authorization token.
+     * @param response The object that saves admin identification cookie.
+     * @return The object that redirects the user to the specified url.
+     */
     public RedirectView dashboardResponse(User user, RedirectAttributes redirectAttributes, HttpServletResponse response) {
         String eMail = user.getEmail(), password = user.getPassword();
         if(eMail.equals(adminMail) && password.equals(adminPass)) {
@@ -38,7 +51,7 @@ public class DashboardService {
             response.addCookie(adminTokenCookie);
             return new RedirectView("/admin");
         }
-        redirectAttributes.addAttribute("base64t", Utils.generateBase64Token(eMail, password));
+        redirectAttributes.addAttribute(tokenName, Utils.generateBase64Token(eMail, password));
         return new RedirectView(hashDecryptUrl);
     }
 

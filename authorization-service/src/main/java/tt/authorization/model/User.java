@@ -9,6 +9,9 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+/**
+ * This class is used to perform ORM of users. A user has an email and a password.
+ */
 @Data
 @Entity
 @Table(name="users")

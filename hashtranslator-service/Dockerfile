@@ -5,10 +5,10 @@ RUN gradle build --no-daemon -x test
 
 FROM openjdk:17-jdk-slim
 
-EXPOSE 8080
+EXPOSE 8181
 
 RUN mkdir /app
 
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/
-
-ENTRYPOINT ["java","-jar","/app/hashtranslator-service-0.0.1-SNAPSHOT.jar"]
+RUN ls /app/
+ENTRYPOINT ["java","-jar","/app/hashtranslator-0.0.1.jar"]

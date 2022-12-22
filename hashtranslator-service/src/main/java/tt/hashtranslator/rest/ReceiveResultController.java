@@ -1,24 +1,24 @@
-package tt.authorization.rest;
+package tt.hashtranslator.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import tt.authorization.service.AdminService;
+import tt.hashtranslator.service.ReceiveResultService;
 
 import javax.servlet.http.HttpServletRequest;
 
 @Controller
-@RequestMapping("/admin")
-public class AdminController {
+@RequestMapping("/api/receive")
+public class ReceiveResultController {
 
     @Autowired
-    private AdminService adminService;
+    private ReceiveResultService receiveResultService;
 
     @GetMapping
-    public String admin(HttpServletRequest request, Model model) {
-        return adminService.adminResponse(request, model);
+    public String receive(HttpServletRequest request, Model model) {
+        return receiveResultService.receiveResponse(request, model);
     }
 
 }
