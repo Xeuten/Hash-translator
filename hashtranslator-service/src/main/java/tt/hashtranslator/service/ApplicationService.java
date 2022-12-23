@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import tt.hashtranslator.model.DecryptApplication;
 import tt.hashtranslator.model.DecryptApplicationStatus;

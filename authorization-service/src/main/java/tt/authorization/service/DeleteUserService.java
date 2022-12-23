@@ -26,6 +26,7 @@ public class DeleteUserService {
     /**
      * This method deletes an entry to the database if the credentials passed to the method as parameters are in the
      * database and if the user has logged in as admin.
+     *
      * @param email The email that has been entered into form by the user.
      * @param request The request that has been sent to the corresponding endpoint.
      * @param model The model that will be passed to the View.

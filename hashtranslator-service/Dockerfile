@@ -10,5 +10,4 @@ EXPOSE 8181
 RUN mkdir /app
 
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/
-RUN ls /app/
 ENTRYPOINT ["java","-jar","/app/hashtranslator-0.0.1.jar"]
