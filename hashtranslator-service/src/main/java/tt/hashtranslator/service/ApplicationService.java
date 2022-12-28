@@ -61,7 +61,7 @@ public class ApplicationService {
      */
     public ResponseEntity<String> sendApplicationResponse(DecryptRequest decryptRequest, String authHeader) {
         String[] headerParts = authHeader.split(" ");
-        if(!headerParts[0].equals("Basic") || headerParts.length != 2) {
+        if (!headerParts[0].equals("Basic") || headerParts.length != 2) {
             return ResponseEntity.status(400).body(incorrectHeader);
         }
         try {
@@ -73,13 +73,16 @@ public class ApplicationService {
                 String id = application.getId();
                 HashMap<String, String> map = application.getMapHash();
                 boolean allDecrypted = true;
-                for(String hash : decryptRequest.hashes) {
+                for (String hash : decryptRequest.hashes) {
                     HttpResponse<String> decryptResponse = HttpClient.newHttpClient().send(Utils
                             .buildGetRequestWithParams(decryptSite, Utils.mapOfParams(hash)), HttpResponse.BodyHandlers.ofString());
                     String body = decryptResponse.body();
-                    if(decryptResponse.statusCode() != 200 || (body.length() == 16 && body.substring(0,13).equals(code))
-                        || body.equals("")) allDecrypted = false;
-                    else {
+                    if (decryptResponse.statusCode() != 200
+                            || (body.length() == 16
+                            && body.substring(0,13).equals(code))
+                        || body.equals("")) {
+                        allDecrypted = false;
+                    } else {
                         map.put(hash, body);
                         mongoTemplate.updateFirst(new Query(Criteria.where("id").is(id)),
                                 new Update().set("mapHash", map), DecryptApplication.class);

@@ -23,6 +23,12 @@ public class DeleteUserService {
     @Value("${messages.denied}")
     private String denied;
 
+    @Value("${messages.user_not_exists}")
+    private String userNotExists;
+
+    @Value("{messages.user_deleted}")
+    private String userDeleted;
+
     /**
      * This method deletes an entry to the database if the credentials passed to the method as parameters are in the
      * database and if the user has logged in as admin.
@@ -36,10 +42,10 @@ public class DeleteUserService {
         if(Utils.containsCookie(request, adminTokenName)) {
             Optional<User> user = userRepository.findById(email);
             if(user.isEmpty()) {
-                model.addAttribute("message","Error. User " + email + " doesn't exist.");
+                model.addAttribute("message", String.format(userNotExists, email));
             } else {
                 userRepository.delete(user.get());
-                model.addAttribute("message", "User " + email + " deleted successfully.");
+                model.addAttribute("message", String.format(userDeleted, email));
             }
         } else model.addAttribute("message", denied);
         return "template1";

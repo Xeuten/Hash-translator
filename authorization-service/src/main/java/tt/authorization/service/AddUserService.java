@@ -22,6 +22,12 @@ public class AddUserService {
     @Value("${messages.denied}")
     private String denied;
 
+    @Value("${messages.user_exists}")
+    private String userExists;
+
+    @Value("${messages.user_saved}")
+    private String userSaved;
+
     /**
      * This method adds a new entry to the database if the credentials passed to the method as parameters aren't in the
      * database and if the user has logged in as admin.
@@ -34,10 +40,10 @@ public class AddUserService {
     public String addUserResponse(String email, String password, HttpServletRequest request, Model model) {
         if(Utils.containsCookie(request, adminTokenName)) {
             if(userRepository.findById(email).isPresent()) {
-                model.addAttribute("message",   "Error. User " + email + " already exists.");
+                model.addAttribute("message", String.format(userExists, email));
             } else {
                 userRepository.save(new User(email, password));
-                model.addAttribute("message", "User " + email + " saved successfully.");
+                model.addAttribute("message", String.format(userSaved, email));
             }
         } else model.addAttribute("message", denied);
         return "template1";

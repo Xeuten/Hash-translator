@@ -34,6 +34,9 @@ public class ApplicationResultService {
     @Value("${messages.incorrect_header}")
     private String incorrectHeader;
 
+    @Value("${messages.application_not_exists}")
+    private String applicationNotExists;
+
     /**
      * Like the sendApplicationResponse method, initially this method validates the header that was passed to it via
      * interacting with the authorization service. Then it checks if the application with the id that was passed to it
@@ -56,9 +59,12 @@ public class ApplicationResultService {
                     HashMap<String, Object> output = new HashMap<>();
                     HashMap<String, String> mapHash = application.get().getMapHash();
                     output.put("hashes", mapHash);
-                    return ResponseEntity.status(200).body(new GsonBuilder().setPrettyPrinting().create().toJson(output));
+                    return ResponseEntity.status(200).body(new GsonBuilder()
+                            .setPrettyPrinting()
+                            .create()
+                            .toJson(output));
                 }
-                return ResponseEntity.status(400).body("Error. Application with id " + id + " doesn't exist");
+                return ResponseEntity.status(400).body(String.format(applicationNotExists, id));
             }
             return ResponseEntity.status(400).body(headerValidationResponse.body());
         } catch(IOException | InterruptedException e) {
