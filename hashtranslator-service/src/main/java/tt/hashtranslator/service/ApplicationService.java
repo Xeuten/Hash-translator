@@ -27,6 +27,9 @@ public class ApplicationService {
     private DecryptApplicationRepo decryptApplicationRepo;
 
     @Autowired
+    private Utils util;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Value("${messages.incorrect_header}")
@@ -66,7 +69,7 @@ public class ApplicationService {
         }
         try {
             HttpResponse<String> headerValidationResponse = HttpClient.newHttpClient()
-                    .send(Utils.buildGetRequest(validationUrl, headerParts[1]), HttpResponse.BodyHandlers.ofString());
+                    .send(util.buildGetRequest(validationUrl, headerParts[1]), HttpResponse.BodyHandlers.ofString());
             if(headerValidationResponse.statusCode() == 200) {
                 DecryptApplication application = new DecryptApplication(decryptRequest);
                 decryptApplicationRepo.save(application);
@@ -74,8 +77,8 @@ public class ApplicationService {
                 HashMap<String, String> map = application.getMapHash();
                 boolean allDecrypted = true;
                 for (String hash : decryptRequest.hashes) {
-                    HttpResponse<String> decryptResponse = HttpClient.newHttpClient().send(Utils
-                            .buildGetRequestWithParams(decryptSite, Utils.mapOfParams(hash)), HttpResponse.BodyHandlers.ofString());
+                    HttpResponse<String> decryptResponse = HttpClient.newHttpClient().send(util.
+                            buildGetRequestWithParams(decryptSite, util.mapOfParams(hash)), HttpResponse.BodyHandlers.ofString());
                     String body = decryptResponse.body();
                     if (decryptResponse.statusCode() != 200
                             || (body.length() == 16

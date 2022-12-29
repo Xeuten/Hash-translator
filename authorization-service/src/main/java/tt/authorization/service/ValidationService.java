@@ -2,17 +2,16 @@ package tt.authorization.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import tt.authorization.persistence.UserRepository;
-
-import java.util.Base64;
+import tt.authorization.util.Utils;
 
 @Service
 public class ValidationService {
 
     @Autowired
-    private UserRepository userRepository;
+    private Utils util;
 
     @Value("${messages.incorrect_credentials}")
     private String errorMessage;
@@ -31,16 +30,13 @@ public class ValidationService {
      * @return The response entity that contains status.
      */
     public ResponseEntity<String> validationResponse(String authHeader) {
-        String[] headerParts = authHeader.split(" ");
-        if(!headerParts[0].equals("Basic") || headerParts.length != 2) {
-            return ResponseEntity.status(400).body(incorrectHeader);
+        if(!util.isHeaderCorrect(authHeader)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(incorrectHeader);
         }
-        String[] decodedCredentials = new String(Base64.getDecoder().decode(headerParts[1])).split(":");
-        if(decodedCredentials.length == 2
-                && userRepository.credentialsAreCorrect(decodedCredentials[0], decodedCredentials[1])) {
-            return ResponseEntity.status(200).build();
+        if(!util.areCredentialsValid(authHeader)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
         }
-        return ResponseEntity.status(401).body(errorMessage);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 }

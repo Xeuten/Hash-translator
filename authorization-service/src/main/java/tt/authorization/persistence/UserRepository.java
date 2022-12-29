@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import tt.authorization.model.User;
 
+import java.util.List;
+
 public interface UserRepository extends JpaRepository<User, String> {
 
     /**
@@ -16,5 +18,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query(value = "SELECT CASE WHEN COUNT(email) > 0 THEN TRUE ELSE FALSE END FROM users WHERE email = :email AND password = :password",
             nativeQuery = true)
     boolean credentialsAreCorrect(@Param("email") String email, @Param("password") String password);
+
+    List<User> findByEmailAndPassword(String email, String password);
 
 }

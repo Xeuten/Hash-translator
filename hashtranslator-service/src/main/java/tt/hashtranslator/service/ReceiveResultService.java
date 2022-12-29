@@ -1,5 +1,6 @@
 package tt.hashtranslator.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -10,6 +11,9 @@ import java.util.Optional;
 
 @Service
 public class ReceiveResultService {
+
+    @Autowired
+    private Utils util;
 
     @Value("${messages.login_error}")
     private String loginError;
@@ -23,11 +27,11 @@ public class ReceiveResultService {
      * an application.
      */
     public String receiveResponse(HttpServletRequest request, Model model) {
-        Optional<String> token = Utils.getToken(request);
-        if(token.isPresent()) return "receive_result";
+        if(util.getToken(request).isPresent()) {
+            return "receive_result";
+        }
         model.addAttribute("message", loginError);
         return "template1";
-
     }
 
 }

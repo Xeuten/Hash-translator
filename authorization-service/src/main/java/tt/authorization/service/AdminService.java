@@ -1,5 +1,6 @@
 package tt.authorization.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -9,6 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class AdminService {
+
+    @Autowired
+    private Utils util;
 
     @Value("${data.admin_token_name}")
     private String adminTokenName;
@@ -27,7 +31,7 @@ public class AdminService {
      * @return The string that corresponds to the general Thymeleaf html template.
      */
     public String adminResponse(HttpServletRequest request, Model model) {
-        model.addAttribute("message", Utils.containsCookie(request, adminTokenName) ? loggedAsAdmin : denied);
+        model.addAttribute("message", util.containsCookie(request, adminTokenName) ? loggedAsAdmin : denied);
         return "template1";
     }
 

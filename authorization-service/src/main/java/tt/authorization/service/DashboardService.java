@@ -6,17 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 import tt.authorization.model.User;
-import tt.authorization.persistence.UserRepository;
 import tt.authorization.util.Utils;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 @Service
 public class DashboardService {
 
     @Autowired
-    private UserRepository userRepository;
+    private Utils util;
 
     @Value("${urls.applications}")
     private String hashDecryptUrl;
@@ -44,14 +42,12 @@ public class DashboardService {
      * @return The object that redirects the user to the specified url.
      */
     public RedirectView dashboardResponse(User user, RedirectAttributes redirectAttributes, HttpServletResponse response) {
-        String eMail = user.getEmail(), password = user.getPassword();
-        if(eMail.equals(adminMail) && password.equals(adminPass)) {
-            Cookie adminTokenCookie = new Cookie(adminTokenName, Utils.generateBase64Token(eMail, password));
-            adminTokenCookie.setMaxAge(3600);
-            response.addCookie(adminTokenCookie);
+        String email = user.getEmail(), password = user.getPassword();
+        if(email.equals(adminMail) && password.equals(adminPass)) {
+            util.createAdminCookie(response, user);
             return new RedirectView("/admin");
         }
-        redirectAttributes.addAttribute(tokenName, Utils.generateBase64Token(eMail, password));
+        redirectAttributes.addAttribute(tokenName, util.generateBase64Token(email, password));
         return new RedirectView(hashDecryptUrl);
     }
 

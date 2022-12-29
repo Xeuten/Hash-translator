@@ -16,6 +16,9 @@ public class AddUserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private Utils util;
+
     @Value("${data.admin_token_name}")
     private String adminTokenName;
 
@@ -38,7 +41,7 @@ public class AddUserService {
      * @return The string that corresponds to the general Thymeleaf html template.
      */
     public String addUserResponse(String email, String password, HttpServletRequest request, Model model) {
-        if(Utils.containsCookie(request, adminTokenName)) {
+        if(util.containsCookie(request, adminTokenName)) {
             if(userRepository.findById(email).isPresent()) {
                 model.addAttribute("message", String.format(userExists, email));
             } else {

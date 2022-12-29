@@ -1,41 +1,24 @@
 package tt.hashtranslator.service;
 
-import com.google.gson.GsonBuilder;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import tt.hashtranslator.model.DecryptApplication;
 import tt.hashtranslator.persistence.DecryptApplicationRepo;
 import tt.hashtranslator.util.Utils;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.Optional;
 
 @Service
 public class ApplicationResultService {
 
     @Autowired
-    private DecryptApplicationRepo decryptApplicationRepo;
-
-    @Value("${urls.validation}")
-    private String validationUrl;
-
-    @Value("${messages.validation_send_failed}")
-    private String validationSendFailed;
-
-    @Value("${messages.url_error}")
-    private String urlError;
+    private Utils util;
 
     @Value("${messages.incorrect_header}")
     private String incorrectHeader;
-
-    @Value("${messages.application_not_exists}")
-    private String applicationNotExists;
 
     /**
      * Like the sendApplicationResponse method, initially this method validates the header that was passed to it via
@@ -45,32 +28,16 @@ public class ApplicationResultService {
      * @param id The id of an application.
      * @return The response entity that contains status and JSON of the application.
      */
+    @SneakyThrows
     public ResponseEntity<String> applicationResultResponse(String id, String authHeader) {
-        String[] headerParts = authHeader.split(" ");
-        if(!headerParts[0].equals("Basic") || headerParts.length != 2) {
-            return ResponseEntity.status(400).body(incorrectHeader);
+        if(!util.isHeaderCorrect(authHeader)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(incorrectHeader);
         }
-        try {
-            HttpResponse<String> headerValidationResponse = HttpClient.newHttpClient().send(Utils
-                    .buildGetRequest(validationUrl, headerParts[1]), HttpResponse.BodyHandlers.ofString());
-            if(headerValidationResponse.statusCode() == 200) {
-                Optional<DecryptApplication> application = decryptApplicationRepo.findById(id);
-                if (application.isPresent()) {
-                    HashMap<String, Object> output = new HashMap<>();
-                    HashMap<String, String> mapHash = application.get().getMapHash();
-                    output.put("hashes", mapHash);
-                    return ResponseEntity.status(200).body(new GsonBuilder()
-                            .setPrettyPrinting()
-                            .create()
-                            .toJson(output));
-                }
-                return ResponseEntity.status(400).body(String.format(applicationNotExists, id));
-            }
-            return ResponseEntity.status(400).body(headerValidationResponse.body());
-        } catch(IOException | InterruptedException e) {
-            return ResponseEntity.status(400).body(validationSendFailed);
-        } catch(URISyntaxException e) {
-            return ResponseEntity.status(400).body(urlError);
+        HttpResponse<String> headerValidationResponse = util.validateHeaderToken(authHeader);
+        if(headerValidationResponse.statusCode() != HttpStatus.OK.value()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(headerValidationResponse.body());
         }
+        return util.findApplicationById(id);
     }
+
 }

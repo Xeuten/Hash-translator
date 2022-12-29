@@ -17,6 +17,9 @@ public class DeleteUserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private Utils util;
+
     @Value("${data.admin_token_name}")
     private String adminTokenName;
 
@@ -39,7 +42,7 @@ public class DeleteUserService {
      * @return The string that corresponds to the general Thymeleaf html template.
      */
     public String deleteUserResponse(String email, HttpServletRequest request, Model model) {
-        if(Utils.containsCookie(request, adminTokenName)) {
+        if(util.containsCookie(request, adminTokenName)) {
             Optional<User> user = userRepository.findById(email);
             if(user.isEmpty()) {
                 model.addAttribute("message", String.format(userNotExists, email));

@@ -1,5 +1,6 @@
 package tt.hashtranslator.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -14,6 +15,9 @@ import java.util.Optional;
 
 @Service
 public class TransitionalService {
+
+    @Autowired
+    private Utils util;
 
     @Value("${urls.applications}")
     private String applicationsUrl;
@@ -52,11 +56,11 @@ public class TransitionalService {
     public String transitionalResponse(boolean isSubmit, String rawData, HttpServletRequest request, Model model) {
         try {
             String data = rawData.split("=")[1];
-            Optional<String> token = Utils.getToken(request);
+            Optional<String> token = util.getToken(request);
             if(token.isPresent()) {
                 HttpResponse<String> applicationResponse = HttpClient.newHttpClient().send(isSubmit ?
-                        Utils.buildPostRequest(applicationsUrl, data, token.get()) :
-                        Utils.buildGetRequest(receiveResult + "/" + data, token.get()), HttpResponse.BodyHandlers.ofString());
+                        util.buildPostRequest(applicationsUrl, data, token.get()) :
+                        util.buildGetRequest(receiveResult + "/" + data, token.get()), HttpResponse.BodyHandlers.ofString());
                 if(applicationResponse.statusCode() == 202) {
                     model.addAttribute("message", applicationSubmitted + applicationResponse.body());
                 } else model.addAttribute("message", applicationResponse.body());
