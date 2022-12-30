@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import tt.hashtranslator.persistence.DecryptApplicationRepo;
 import tt.hashtranslator.util.Utils;
 
 import java.net.http.HttpResponse;
@@ -21,12 +20,12 @@ public class ApplicationResultService {
     private String incorrectHeader;
 
     /**
-     * Like the sendApplicationResponse method, initially this method validates the header that was passed to it via
-     * interacting with the authorization service. Then it checks if the application with the id that was passed to it
-     * as an argument is in the database. If all the checks were passed, it returns the hashes with the results of their
-     * decryption as a JSON.
+     * This method checks format of the header that was passed to it as an argument and then validates it. If both the
+     * checks were passed, and if the application with the id is in the database, it returns the hashes with the
+     * results of their decryption as a JSON.
      * @param id The id of an application.
-     * @return The response entity that contains status and JSON of the application.
+     * @return The response entity that contains and JSON of the application, or if an error occurred, the
+     * response entity that contains error message.
      */
     @SneakyThrows
     public ResponseEntity<String> applicationResultResponse(String id, String authHeader) {
@@ -37,7 +36,7 @@ public class ApplicationResultService {
         if(headerValidationResponse.statusCode() != HttpStatus.OK.value()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(headerValidationResponse.body());
         }
-        return util.findApplicationById(id);
+        return util.findApplicationResponse(id);
     }
 
 }

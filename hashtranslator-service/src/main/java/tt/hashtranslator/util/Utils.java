@@ -6,10 +6,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import tt.hashtranslator.model.DecryptApplication;
+import tt.hashtranslator.model.DecryptApplicationStatus;
+import tt.hashtranslator.model.DecryptRequest;
 import tt.hashtranslator.persistence.DecryptApplicationRepo;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +21,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -40,6 +45,24 @@ public class Utils {
 
     @Value("${messages.application_not_exists}")
     private String applicationNotExists;
+
+    @Value("${urls.decrypt_site}")
+    private String decryptSite;
+
+    @Value("${data.error_code}")
+    private String code;
+
+    @Value("${urls.applications}")
+    private String applicationsUrl;
+
+    @Value("${messages.application_submitted}")
+    private String applicationSubmitted;
+
+    @Value("${messages.login_error}")
+    private String loginError;
+
+    @Value("${messages.incorrect_format}")
+    private String incorrectFormat;
 
     /**
      * This method builds a HTTP request with POST type of method, with the specified URL, body and authorization token,
@@ -146,8 +169,7 @@ public class Utils {
      */
     public HttpResponse<String> validateHeaderToken(String authHeader)
             throws URISyntaxException, IOException, InterruptedException {
-        return HttpClient.newHttpClient().send(
-                buildGetRequest(validationUrl, authHeader.split(" ")[1]),
+        return HttpClient.newHttpClient().send(buildGetRequest(validationUrl, authHeader.split(" ")[1]),
                 HttpResponse.BodyHandlers.ofString());
     }
 
@@ -158,16 +180,126 @@ public class Utils {
      * @return A response entity with "OK" status and hashes with their decryptions in JSON format, if the application
      * was found, or a response entity with "NOT FOUND" status if otherwise.
      */
-    public ResponseEntity<String> findApplicationById(String id) {
-        return decryptApplicationRepo.findById(id).map(decryptApplication ->
-                        ResponseEntity.status(HttpStatus.OK)
-                                .body(new GsonBuilder()
+    public ResponseEntity<String> findApplicationResponse(String id) {
+        return decryptApplicationRepo.findById(id)
+                .map(decryptApplication -> ResponseEntity.status(HttpStatus.OK)
+                        .body(new GsonBuilder()
                                         .setPrettyPrinting()
                                         .create()
                                         .toJson(Map.of("hashes", decryptApplication.getMapHash()))))
-                .orElseGet(() ->
-                        ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                .body(String.format(applicationNotExists, id)));
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(String.format(applicationNotExists, id)));
+    }
+
+    /**
+     * This method loops through all the hashes that the decrypt request contains, decrypting them and saving the
+     * results in the database. Then it returns the id of the application.
+     * @param decryptRequest The decryption request is essentially the list of hashes to decrypt.
+     * @return The id of the decryption application.
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public String decryptAllAndSave(DecryptRequest decryptRequest)
+            throws URISyntaxException, IOException, InterruptedException {
+        DecryptApplication application = new DecryptApplication(decryptRequest);
+        boolean allDecrypted = true;
+        HashMap<String, String> updatedMapHash = application.getMapHash();
+        for(String hash : decryptRequest.hashes) {
+            HttpResponse<String> decryptResponse = decryptHash(hash);
+            if(isDecryptSuccessful(decryptResponse)) {
+                updatedMapHash.put(hash, decryptResponse.body());
+            } else {
+                allDecrypted = false;
+            }
+        }
+        application.setMapHash(updatedMapHash);
+        application.setStatus(allDecrypted ? DecryptApplicationStatus.DECRYPTED : DecryptApplicationStatus.PROCESSED);
+        decryptApplicationRepo.save(application);
+        return application.getId();
+    }
+
+    /**
+     * This method sends a request to the exterior website that tries to decrypt a hash and receives a response.
+     * @param hash The hash to decrypt.
+     * @return The response that was returned by the website.
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public HttpResponse<String> decryptHash(String hash)
+            throws URISyntaxException, IOException, InterruptedException {
+        return HttpClient.newHttpClient().send(buildGetRequestWithParams(decryptSite, mapOfParams(hash)),
+                HttpResponse.BodyHandlers.ofString());
+    }
+
+    /**
+     * This method checks if the decryption that the exterior website tried to make was successful.
+     * @param decryptResponse The response of the website.
+     * @return True if the decryption was successful and false if it wasn't.
+     */
+    public boolean isDecryptSuccessful(HttpResponse<String> decryptResponse) {
+        String body = decryptResponse.body();
+        return decryptResponse.statusCode() == HttpStatus.OK.value()
+                && !(body.length() == 16 && body.substring(0,13).equals(code))
+                && !body.equals("");
+    }
+
+    /**
+     * This method creates a cookie with expiration age of 30 minutes, with a name "base64t", and with a value, which
+     * equals encoded credentials.
+     * @param response HttpServletResponse object that stores user's token.
+     * @param token User's base64 encoded credentials.
+     */
+    public void createUserCookie(HttpServletResponse response, String token) {
+        Cookie tokenCookie = new Cookie(tokenName, token);
+        tokenCookie.setMaxAge(1800);
+        response.addCookie(tokenCookie);
+    }
+
+    /**
+     * This method checks if the data that was passed to it as an argument has correct format, and if the user's token
+     * is present. If both checks were passed, it sends a request with user's input to one of the main controllers.
+     * @param isSubmit This boolean value indicates which controller received the request - the submission controller
+     * or the reception controller.
+     * @param rawData The string is expected to contain user's data in raw form.
+     * @param request HttpServletRequest object that is expected to store user's token.
+     * @return The response from a controller or the message that corresponds to the error that occurred.
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public String receiveResponseFromMainControllers(boolean isSubmit, String rawData, HttpServletRequest request)
+            throws URISyntaxException, IOException, InterruptedException {
+        Optional<String> token = getToken(request);
+        return rawData.split("=").length != 2 ?
+                incorrectFormat :
+                token.isEmpty() ?
+                        loginError :
+                        sendAndReceive(isSubmit, rawData.split("=")[1], token.get());
+    }
+
+    /**
+     * This method sends requests to one of the main controllers and returns its response.
+     * @param isSubmit This boolean value indicates which controller received the request - the submission controller
+     * or the reception controller.
+     * @param data The string is expected to contain either the JSON of hashes to decrypt, or the id of an
+     * application.
+     * @param token User's base64 encoded credentials.
+     * @return The response from a controller.
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public String sendAndReceive(boolean isSubmit, String data, String token)
+            throws URISyntaxException, IOException, InterruptedException {
+        HttpResponse<String> applicationResponse = HttpClient.newHttpClient().send(isSubmit ?
+                        buildPostRequest(applicationsUrl, data, token) :
+                        buildGetRequest(applicationsUrl + "/" + data, token),
+                HttpResponse.BodyHandlers.ofString());
+        return applicationResponse.statusCode() == HttpStatus.ACCEPTED.value() ?
+                applicationSubmitted + applicationResponse.body() :
+                applicationResponse.body();
     }
 
 }

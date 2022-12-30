@@ -25,9 +25,6 @@ public class DashboardService {
     @Value("${data.admin_pass}")
     private String adminPass;
 
-    @Value("${data.admin_token_name}")
-    private String adminTokenName;
-
     @Value("${data.token_name}")
     private String tokenName;
 

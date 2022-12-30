@@ -16,16 +16,13 @@ public class ValidationService {
     @Value("${messages.incorrect_credentials}")
     private String errorMessage;
 
-    @Value("${messages.login_error}")
-    private String loginError;
-
     @Value("${messages.incorrect_header}")
     private String incorrectHeader;
 
     /**
      * This method receives an authentication header, which consists of the words "Basic" and a Base64 encoded token of
      * email and password of a user. If the credentials are in the base, the response is code 200. If they aren't, the
-     * response is code 401 and the error message.
+     * response is code 401 and error message.
      * @param authHeader The string that is interpreted as th encoded token.
      * @return The response entity that contains status.
      */

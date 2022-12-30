@@ -7,10 +7,9 @@ import org.springframework.ui.Model;
 import tt.hashtranslator.util.Utils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Optional;
 
 @Service
-public class ReceiveResultService {
+public class ReceptionService {
 
     @Autowired
     private Utils util;
@@ -26,7 +25,7 @@ public class ReceiveResultService {
      * @return The string that corresponds to the html document, which corresponds to the submission form of an id of
      * an application.
      */
-    public String receiveResponse(HttpServletRequest request, Model model) {
+    public String receptionResponse(HttpServletRequest request, Model model) {
         if(util.getToken(request).isPresent()) {
             return "receive_result";
         }

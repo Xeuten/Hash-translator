@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/api/transitional")
-public class SubmitTransitionalController {
+public class SubmissionTransitionalController {
 
     @Autowired
     private TransitionalService transitionalService;
