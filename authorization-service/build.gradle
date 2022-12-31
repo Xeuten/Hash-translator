@@ -26,6 +26,9 @@ dependencies {
     implementation 'org.postgresql:postgresql:42.5.1'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
 }

@@ -28,9 +28,7 @@ public class Utils {
      * @return The Base64 encoded token.
      */
     public String generateBase64Token(String email, String password) {
-        return Base64.getEncoder()
-                .encodeToString((email + ":" + password)
-                        .getBytes());
+        return Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
     }
 
     /**
@@ -40,9 +38,7 @@ public class Utils {
      * @return True, if the cookie was found, and false if it wasn't.
      */
     public boolean containsCookie(HttpServletRequest request, String cookieName) {
-        return Arrays.stream(request.getCookies())
-                .anyMatch(cookie -> cookie.getName()
-                        .equals(cookieName));
+        return Arrays.stream(request.getCookies()).anyMatch(cookie -> cookie.getName().equals(cookieName));
     }
 
     /**
